@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use Trimorious Research, cite this model release and its upstream base model."
+title: "Trimorious Research 4B (QLoRA adapter baseline)"
+type: software
+repository-code: "https://github.com/roime81/trimorious-model"
+url: "https://huggingface.co/roime81/trimorious-research-4B"
+license: Apache-2.0
+version: "baseline"

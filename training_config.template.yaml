@@ -1,0 +1,54 @@
+# Reconstruction template only — not a verified run manifest.
+# Fill from original logs or a reproducible rerun before claiming reproducibility.
+status: incomplete_not_verified
+
+model:
+  repository: roime81/trimorious-research-4B
+  base_model: unsloth/Qwen2.5-3B-Instruct-bnb-4bit
+  base_revision: null
+  adapter_type: LORA
+  adapter_revision: null
+  adapter_sha256: null
+  tokenizer_revision: null
+  chat_template_sha256: null
+
+reported_configuration_not_verified:
+  framework: "Unsloth + TRL"
+  per_device_batch_size: 2
+  gradient_accumulation_steps: 4
+  learning_rate: 0.0002
+  scheduler: cosine
+  lora_rank: 16
+  lora_alpha: 16
+  lora_dropout: 0.0
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+training:
+  seed: null
+  epochs: null
+  max_steps: null
+  optimizer: null
+  warmup_steps: null
+  weight_decay: null
+  max_sequence_length: null
+  packing: null
+  precision: null
+  effective_global_batch_size: null
+  effective_training_tokens: null
+  dataset_revisions: []
+  hardware: null
+  training_log: null
+  environment_lock: null
+  code_commit: null
+
+notes:
+  - The values in reported_configuration_not_verified are copied from the previous model README/adapter configuration.
+  - No exact training run was verified during the repository audit.
+  - Do not use this template as a production training configuration without completing and reviewing the null fields.
