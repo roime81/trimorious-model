@@ -38,7 +38,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Hugging Face upload dependencies
-        run: python -m pip install --upgrade "huggingface_hub[hf_xet]"
+        run: python -m pip install --upgrade huggingface_hub
 
       - name: Pre-flight and publish reviewed model artifacts
         env:
