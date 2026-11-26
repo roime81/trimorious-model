@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm_publish:
-        description: "Confirm publishing the current GitHub main branch to the existing Hugging Face model repository."
+        description: "Confirm publishing the selected GitHub main or release/* branch to the Hugging Face model repository."
         required: true
         type: choice
         options:
@@ -32,14 +32,14 @@ concurrency:
 
 jobs:
   publish:
-    if: ${{ inputs.confirm_publish == 'yes' && github.ref == 'refs/heads/main' }}
+    if: ${{ inputs.confirm_publish == 'yes' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - name: Check out the GitHub mirror and hydrate Git LFS files
         uses: actions/checkout@v6
         with:
-          ref: main
+          ref: ${{ github.ref }}
           fetch-depth: 1
           lfs: true
 
