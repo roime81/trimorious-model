@@ -97,7 +97,15 @@ def main() -> int:
         action="store_true",
         help="Validate local artifacts without contacting Hugging Face or requiring a token.",
     )
+    parser.add_argument(
+        "--revision",
+        default=os.environ.get("HF_REVISION", "main"),
+        help="Hugging Face branch to update (main for baseline, candidate/v1.1 etc. for a versioned candidate).",
+    )
     args = parser.parse_args()
+
+    if not args.revision.strip():
+        fail("Target Hugging Face revision cannot be empty.")
 
     validate_local_artifacts()
     if args.check_only:
@@ -110,10 +118,18 @@ def main() -> int:
 
     api = HfApi(token=token)
     api.model_info(REPO_ID)  # Refuse to create or redirect to an unexpected repo.
+    if args.revision != "main":
+        api.create_branch(
+            repo_id=REPO_ID,
+            branch=args.revision,
+            repo_type="model",
+            exist_ok=True,
+        )
     commit = api.upload_folder(
         repo_id=REPO_ID,
         repo_type="model",
         folder_path=str(ROOT),
+        revision=args.revision,
         allow_patterns=UPLOAD_FILES,
         commit_message=(
             "Sync reviewed model artifacts from GitHub "
@@ -122,7 +138,7 @@ def main() -> int:
     )
 
     # Verify that expected model files are present after the upload.
-    info = api.model_info(REPO_ID, files_metadata=True)
+    info = api.model_info(REPO_ID, revision=args.revision, files_metadata=True)
     remote_files = {item.rfilename for item in (info.siblings or [])}
     missing = sorted(set(REQUIRED_FILES).difference(remote_files))
     if missing:
@@ -130,7 +146,7 @@ def main() -> int:
 
     print("Hugging Face upload completed.")
     print(f"Commit: {getattr(commit, 'oid', 'unknown')}")
-    print(f"Model: https://huggingface.co/{REPO_ID}")
+    print(f"Model revision: https://huggingface.co/{REPO_ID}/tree/{args.revision}")
     print("Remote file inventory check: passed")
     return 0
 
