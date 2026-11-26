@@ -11,6 +11,17 @@ on:
           - "no"
           - "yes"
         default: "no"
+      target_revision:
+        description: "Hugging Face destination branch. Use main for current baseline or candidate/v1.1 for a new version."
+        required: true
+        type: choice
+        options:
+          - "main"
+          - "candidate/v1.1"
+          - "candidate/v1.2"
+          - "candidate/v1.3"
+          - "candidate/v2.0"
+        default: "main"
 
 permissions:
   contents: read
@@ -43,4 +54,4 @@ jobs:
       - name: Pre-flight and publish reviewed model artifacts
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: python scripts/publish_model_to_hf.py
+        run: python scripts/publish_model_to_hf.py --revision "${{ inputs.target_revision }}"
