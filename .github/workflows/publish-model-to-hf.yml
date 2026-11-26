@@ -1,0 +1,46 @@
+name: Publish model mirror to Hugging Face
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_publish:
+        description: "Confirm publishing the current GitHub main branch to the existing Hugging Face model repository."
+        required: true
+        type: choice
+        options:
+          - "no"
+          - "yes"
+        default: "no"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trimorious-model-huggingface-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: ${{ inputs.confirm_publish == 'yes' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out the GitHub mirror and hydrate Git LFS files
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 1
+          lfs: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Hugging Face upload dependencies
+        run: python -m pip install --upgrade "huggingface_hub[hf_xet]"
+
+      - name: Pre-flight and publish reviewed model artifacts
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python scripts/publish_model_to_hf.py
