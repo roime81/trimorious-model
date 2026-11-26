@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Publish the reviewed GitHub model mirror to its Hugging Face model repo.
+"""Safely publish the reviewed GitHub adapter mirror to Hugging Face.
 
-This uploads only the explicit model artifact allow-list. It does not delete
-remote-only files, and it refuses Git LFS pointer files (which would otherwise
-publish pointer text instead of the actual weights).
+Only the explicit artifact allow-list is uploaded. Remote-only files are not
+deleted. The script rejects unresolved Git LFS pointers.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import sys
@@ -21,21 +21,29 @@ UPLOAD_FILES = [
     ".gitattributes",
     "LICENSE",
     "README.md",
+    "CITATION.cff",
+    "SECURITY.md",
     "adapter_config.json",
     "adapter_model.safetensors",
     "chat_template.jinja",
     "tokenizer.json",
     "tokenizer_config.json",
+    "training_config.template.yaml",
+    "evaluation_status.json",
 ]
 
 REQUIRED_FILES = [
     "LICENSE",
     "README.md",
+    "CITATION.cff",
+    "SECURITY.md",
     "adapter_config.json",
     "adapter_model.safetensors",
     "chat_template.jinja",
     "tokenizer.json",
     "tokenizer_config.json",
+    "training_config.template.yaml",
+    "evaluation_status.json",
 ]
 
 
@@ -43,11 +51,7 @@ def fail(message: str) -> None:
     raise SystemExit(f"PRE-FLIGHT FAILED: {message}")
 
 
-def main() -> int:
-    token = os.environ.get("HF_TOKEN")
-    if not token:
-        fail("HF_TOKEN secret is not configured.")
-
+def validate_local_artifacts() -> str:
     for relative in REQUIRED_FILES:
         path = ROOT / relative
         if not path.is_file():
@@ -73,13 +77,36 @@ def main() -> int:
     if not isinstance(base_model, str) or not base_model.strip():
         fail("adapter_config.json has no valid base_model_name_or_path.")
 
-    print(f"Publishing adapter-only model mirror: {REPO_ID}")
+    evaluation = json.loads((ROOT / "evaluation_status.json").read_text(encoding="utf-8"))
+    if evaluation.get("model") != REPO_ID:
+        fail("evaluation_status.json refers to a different model repository.")
+
+    print(f"Local artifact pre-flight passed for {REPO_ID}")
     print(f"Declared base model: {base_model}")
-    print("Files to upload:")
     for relative in UPLOAD_FILES:
         path = ROOT / relative
         if path.is_file():
             print(f"  {relative}: {path.stat().st_size:,} bytes")
+    return base_model
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check-only",
+        action="store_true",
+        help="Validate local artifacts without contacting Hugging Face or requiring a token.",
+    )
+    args = parser.parse_args()
+
+    validate_local_artifacts()
+    if args.check_only:
+        print("Check-only mode: no Hugging Face write was attempted.")
+        return 0
+
+    token = os.environ.get("HF_TOKEN")
+    if not token:
+        fail("HF_TOKEN secret is not configured.")
 
     api = HfApi(token=token)
     api.model_info(REPO_ID)  # Refuse to create or redirect to an unexpected repo.
