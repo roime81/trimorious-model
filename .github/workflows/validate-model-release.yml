@@ -1,0 +1,35 @@
+name: Validate model release package
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out model mirror and hydrate Git LFS
+        uses: actions/checkout@v6
+        with:
+          lfs: true
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Hub validation dependency
+        run: python -m pip install --upgrade huggingface_hub
+
+      - name: Compile publisher
+        run: python -m py_compile scripts/publish_model_to_hf.py
+
+      - name: Validate model artifacts without publishing
+        run: python scripts/publish_model_to_hf.py --check-only
