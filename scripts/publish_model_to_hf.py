@@ -87,7 +87,6 @@ def main() -> int:
         repo_id=REPO_ID,
         repo_type="model",
         folder_path=str(ROOT),
-        path_in_repo=".",
         allow_patterns=UPLOAD_FILES,
         commit_message=(
             "Sync reviewed model artifacts from GitHub "
