@@ -1,0 +1,18 @@
+{
+  "model": "roime81/trimorious-research-4B",
+  "release": "original-research-baseline",
+  "status": "not_independently_evaluated",
+  "benchmark_revision": null,
+  "evaluation_code_commit": null,
+  "evaluated_at_utc": null,
+  "base_model_comparison": null,
+  "metrics": {},
+  "safety_evaluation": "not_published",
+  "context_length_evaluation": "not_published",
+  "inference_compatibility": "requires_validation",
+  "notes": [
+    "No benchmark scores are asserted in this file.",
+    "Evaluate the exact base model and adapter on the same frozen benchmark before claiming improvement.",
+    "Record per-domain metrics, verifier pass rates, scoring code, sample sizes and uncertainty where appropriate."
+  ]
+}
