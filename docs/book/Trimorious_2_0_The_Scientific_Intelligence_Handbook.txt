@@ -1,0 +1,2039 @@
+TEXT COMPANION — extracted from the 39-page November 2026 research edition. The designed cover, visual diagrams, typography and clickable TOC belong to the original PDF. Publication draft; see original edition's scope and rights statement.
+
+========== PRINT PAGE 1 ==========
+
+TRIMORIOUS RESEARCH PROJECT / FIRST EDITION
+
+
+
+
+TRIMORIOUS
+2.0
+The Scientific Intelligence Handbook
+Designing, training and evaluating a hybrid-ready LLM
+
+
+
+
+ARCHITECTURE / DATA / CODE / EVIDENCE
+
+November 2026 • Research edition
+
+========== PRINT PAGE 2 ==========
+
+PUBLICATION INFORMATION
+
+
+
+
+Trimorious 2.0
+The Scientific Intelligence Handbook
+
+Designing, training and evaluating a hybrid-ready language model
+
+Prepared for the Trimorious Research Project. First edition, 27 November 2026.
+
+
+About this edition
+This technical book documents the project’s initial design, dataset remediation, benchmark
+development, foundation model selection, synthetic data engineering, QLoRA training,
+reported evaluation and deployment plans. It is a publication draft based on the project
+materials available at the stated date. It is not a peer-reviewed research article or a
+certification of scientific or commercial fitness.
+
+Scope and rights
+The book does not distribute private benchmark content, model weights, reviewer records
+or access credentials. Project names, upstream models and libraries are attributed to their
+respective owners. Review the manuscript, author byline, redistribution permissions and
+model/data licensing before publication. No ISBN or formal publisher has been assigned.
+
+Evidence conventions
+Recorded means a value appears in a supplied artifact. Verified here means a file or
+consistency check was performed for this edition. Proposed identifies planned
+architecture or illustrative code. GPU training and v2 inference were not independently
+rerun for this publication. Source references [S1–S11] point to the register in Appendix B.
+
+
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                           2
+
+========== PRINT PAGE 3 ==========
+
+CONTENTS
+
+
+
+
+Table of contents
+PROLOGUE
+A model built to be checked                  5
+
+PART I / DESIGN
+01 The original challenge                    6
+
+02 The hybrid intelligence vision            7
+
+03 Roadmap and release strategy              8
+
+PART II / DATA
+04 The four starting datasets                9
+
+05 Reconstruction and quarantine            10
+
+06 The D01–D10 data strategy                11
+
+07 Structured scientific data               12
+
+08 The first verified corpus                13
+
+09 Scaling the scientific factory           14
+
+10 Multi-tool execution and teachers        15
+
+PART III / EVALUATION
+11 Design of the TSIB benchmark             16
+
+12 Scoring and paired comparisons           17
+
+13 What the original model taught us        18
+
+14 Selecting the new foundation             19
+
+15 Approval, recovery and the seven gates   20
+
+16 Freeze a defensible training corpus      21
+
+
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK          3
+
+========== PRINT PAGE 4 ==========
+
+CONTENTS
+
+
+
+
+Table of contents / continued
+PART IV / IMPLEMENTATION
+17 Reproducible project layout               22
+
+18 Integrity and numerical verification      23
+
+19 The exact learning configuration          24
+
+20 Loading the model in 4-bit                25
+
+21 Assistant-only loss and the smoke test    26
+
+22 Training, checkpointing and resume        27
+
+PART IV / RESULTS
+23 What the training run achieved            28
+
+24 The scientific scorecard                  29
+
+25 Uncertainty, speed and release criteria   30
+
+PART V / DEPLOYMENT
+26 Inference with the trained adapter        31
+
+27 The scientific playground                 32
+
+28 Package and publish responsibly           33
+
+29 What remains before public release        34
+
+PART V / FUTURE
+30 From core LLM to full THI                 35
+
+APPENDICES
+A Reproducibility checklist                  36
+
+B Source and artifact register               37
+
+C Model lineage and public resources         38
+
+EPILOGUE
+The discipline of verification               39
+
+
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK           4
+
+========== PRINT PAGE 5 ==========
+
+PROLOGUE
+
+
+
+
+A model built to be checked
+The central idea is not that a language model should be trusted because it
+sounds scientific. It is that its answers should be measurable, traceable and
+open to correction.
+
+Trimorious began as a research-oriented language model and a set of four data
+repositories. The upgrade programme asked a practical question: could a compact,
+accessible model become a more useful scientific reasoning assistant without requiring an
+expensive foundation-model training effort? The answer required treating data, training,
+evaluation and publication as one engineering lifecycle.
+
+The project moved from a Qwen2.5-based adapter to a Qwen3-based LoRA adapter, using
+Google Colab and persistent storage. The programme first audited the existing datasets,
+then designed a diagnostic benchmark, selected a new foundation, constructed synthetic
+scientific candidates, screened them, and trained a controlled subset.
+
+
+   The measured outcome: 610/880 correct on the D07 objective diagnostic for Trimorious 2.0, compared
+   with 608/880 for its Qwen3 foundation. This is a small, uncertain improvement, not proof of superior
+   scientific intelligence.
+
+
+This handbook is both a technical history and a reproducibility guide. It describes the
+broader Trimorious Hybrid Intelligence (THI) vision, the narrower experimental LLM that
+was trained, and the steps needed to validate and release it responsibly.
+
+How to read the book
+Parts I–II describe the motivation, architecture and data work. Part III follows the
+benchmark and learning pipeline. Part IV records the training and evaluation results. Part
+V explains inference, publication and the hybrid roadmap. Code listings are selected
+excerpts or explicitly labelled teaching adaptations, not an assertion that every example
+was executed in this edition.
+
+
+
+
+Evidence: [S1, S5, S8, S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                       5
+
+========== PRINT PAGE 6 ==========
+
+PART I / DESIGN
+
+
+
+
+01 The original challenge
+From a downloadable adapter to a research-quality scientific model.
+
+The initial production-readiness proposal identified eight release blockers: uncertain
+model identity, insufficient evaluation, unverified reasoning, incomplete model
+documentation, reproducibility gaps, safety, licensing and public inference compatibility.
+A public repository alone is not proof that a model is reliable, scientifically validated or
+commercially redistributable.
+
+  Risk                      Engineering response
+
+  Model identity            Pin base revision; distinguish adapter from merged weights.
+
+  Data quality              Normalize schemas, deduplicate, verify ground truth and provenance.
+
+  Evaluation                Compare base and adapted models on fixed questions and scoring rules.
+
+  Reproducibility           Record seeds, versions, hashes and checkpoint lineage.
+
+  Safety and licensing      Assess misuse, source rights and limitations; gate publication.
+
+  Inference                 Test actual tokenizer, template, quantization and reload.
+
+
+Principles of scientific assistance
+A scientific assistant should help a researcher formulate hypotheses, examine methods,
+reason with equations, identify assumptions, compare evidence and communicate
+uncertainty. The desired behaviour is not authoritative-sounding prose. A conclusion
+should be linked to evidence or a reproducible computation; when verification is
+impossible, the system should say so.
+
+The project therefore prioritised a small model with external verification pathways over a
+larger model trained on unreliable data. The initial proposal considered future 7B–8B and
+14B variants, but only after the methodology was demonstrated. Training a new
+foundation model from scratch was outside the immediate scope.
+
+
+
+
+Evidence: [S1]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                 6
+
+========== PRINT PAGE 7 ==========
+
+PART I / DESIGN
+
+
+
+
+02 The hybrid intelligence vision
+A probabilistic language model is one component of a scientific intelligence
+system.
+
+                                                  Research Studio / Scientific Lab
+                                                          Future workspace
+
+
+
+                                                   Adaptive intelligence router
+                                                         Future orchestration
+
+
+
+            Trimorious 2.0                               Specialist models                   Symbolic engines
+            Trained core LLM                                   Planned                       Offline checks only
+
+
+         Knowledge + RAG                                   Agentic tools                      Scientific Lab
+                 Planned                                 Candidate traces only                    Planned
+
+
+
+                                                    Verification + provenance
+                                          Offline implemented; runtime integration planned
+
+
+
+
+Figure 2.1 — Target THI architecture. Only the core LLM and offline dataset/benchmark verification are evidenced in
+the current experiment.
+
+The intended hybrid combines learned language capabilities with deterministic symbolic
+and numerical computation, retrieval and evidence, specialist models and controlled
+research agents. The router would decide whether an answer can be generated directly,
+must be calculated, needs a source or requires a larger investigation.
+
+A separate evidence layer should preserve the original source, method, observations and
+limitations. This would make it possible to distinguish unverified text, source-checked
+claims, computationally verified results and independently validated findings. None of
+these runtime integrations should be inferred merely from an SFT dataset containing tool
+traces.
+
+
+   Scope decision: release the experimental Qwen3-based LLM first. THI routing, live tool execution,
+   scientific RAG, simulations and the research studio are future system components.
+
+
+
+
+Evidence: [S1, S10; project design discussions]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                                7
+
+========== PRINT PAGE 8 ==========
+
+PART I / DESIGN
+
+
+
+
+03 Roadmap and release strategy
+The original sixteen-week programme was a planning estimate, not a claim
+about actual duration.
+
+  Phase             Original plan                   Outcome in this experiment
+
+  1–2               Audit and baseline              M1.1–M1.3.1; source audit and D07
+
+  3–5               Restructure D01–D04; D05–D07    M1.2.1; candidate reconstruction
+
+  6–8               Expand science, safety, tools   M1.4–M1.4.1; synthetic pilots
+
+  9–12              SFT, DPO, GRPO                  M2.0 SFT only; DPO/GRPO skipped
+
+  13–14             Verification and optimization   M2.3 objective evaluation reported
+
+  15–16             Public release                  Private upload reported; public approval pending
+
+
+A deliberately narrower pathway emerged as Colab GPU availability and data quality
+constrained the programme. Rather than requiring all future capabilities to ship together,
+the engineering decision was to focus on a reproducible core model. Preference
+optimization and reinforcement learning became optional after supervised fine-tuning.
+
+Release boundaries
+The original model and datasets were to remain immutable. Derived candidates,
+benchmark artifacts and the new adapter have distinct identities. The new Hugging Face
+target is roime81/trimorious-research-4B-v2; the original roime81/trimorious-research-4B
+remains the baseline.
+
+The seven-stage workflow later consolidated recovery, approval, smoke testing, training,
+evaluation, packaging and publication. Each stage has a different success condition.
+Downloading weights is not training; passing a smoke test is not final validation; a private
+upload is not a public release.
+
+
+
+
+Evidence: [S1, S8, S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                    8
+
+========== PRINT PAGE 9 ==========
+
+PART II / DATA
+
+
+
+
+04 The four starting datasets
+A record count is an inventory, not a measure of learning value.
+
+  ID / repository suffix                           Rows             Observed schema
+
+  D01 scientific-instructions                      3,706            messages
+
+  D02 symbolic-trajectories                        7,784            messages
+
+  D03 knowledge-base                               7,784            doc_id, title, source, section, text
+
+  D04 agentic-reasoning-knowledge                  225              messages, ground_truth
+
+  Total                                            19,499           Four different source contracts
+
+
+The reconstruction bundle records exact revisions for the four repositories. D01 and D02
+were conversational data, while D03 was a document-chunk knowledge base. D04 held
+conversations and expected results. Treating all rows as flat question/answer pairs led to
+false deduplication during the first remediation pass.
+
+Version and naming discipline
+The proposal and reconstruction use D01 for scientific instructions and D02 for symbolic
+trajectories. Earlier repository documentation used these identifiers in reverse. The book
+adopts the reconstruction convention and recommends explicit repository-to-ID mapping
+in future manifests.
+
+An earlier normalization run left a discrepancy of 596 records. The subsequent
+reconstruction reconciled every source row, but the historical cause was not established.
+Recording that uncertainty is preferable to inventing a reason for the missing data.
+
+
+   D03 is retrieval material by default, not supervised fine-tuning material. Licensing and evidence
+   extraction must be handled before making its contents distributable or treating passages as training
+   answers.
+
+
+
+
+Evidence: [S1–S3]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                        9
+
+========== PRINT PAGE 10 ==========
+
+PART II / DATA
+
+
+
+
+05 Reconstruction and quarantine
+The first lesson: duplication can hide behind a large dataset.
+
+  Source         Disposition                                                    Count
+
+  D01            Distinct rebuilt math candidates                               3
+
+  D01            Repeated templates collapsed                                   2,003
+
+  D01            Unsupported prompts quarantined                                1,700
+
+  D02            Distinct rebuilt math candidates                               4
+
+  D02            Repeated templates collapsed                                   7,780
+
+  D03            Retrieval-only; license review                                 7,784
+
+  D04            Distinct replay candidates                                     12
+
+  D04            Repeated templates collapsed                                   213
+
+
+The corrected M1.2.1 processing accounted for 19,499 rows. It did not claim that the 19
+rebuilt symbolic/replay candidates were training-ready. Rather, it preserved usable
+examples for review, collapsed repeated patterns and quarantined records whose source
+prompts did not support the answers.
+
+Four recurring symbolic functions accounted for almost all D02 entries. This discovery
+changed the development strategy: the project needed new verified task mechanisms, not
+just additional copies of examples.
+
+The disposition ledger
+Every record receives a source identity, schema and normalization status, a reason for
+inclusion or exclusion, and an approval state. A quarantine is evidence of work done, not a
+deletion of inconvenient results. This allows later reviewers to reconstruct exactly how the
+training corpus was derived.
+
+
+
+
+Evidence: [S3]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                       10
+
+========== PRINT PAGE 11 ==========
+
+PART II / DATA
+
+
+
+
+06 The D01–D10 data strategy
+A portfolio of datasets designed around distinct capabilities.
+
+  ID            Purpose                               Original planning target
+
+  D01           Scientific instructions               50k–100k examples
+
+  D02           Symbolic trajectories                 100k–250k trajectories
+
+  D03           Scientific knowledge/evidence         50k–100k claims
+
+  D04           Agentic reasoning                     20k–50k trajectories
+
+  D05           Mathematical verification             50k examples
+
+  D06           Scientific preferences                30k–50k pairs
+
+  D07           Scientific evaluation                 5k–10k cases
+
+  D08           Multilingual science                  30k–50k examples
+
+  D09           Safety and reliability                15k–30k examples
+
+  D10           Scientific environments               100–500 environments
+
+
+These are aspirational quantities from the initial proposal, not the size of the present
+corpus. They describe different units: a claim, an executable environment and a chat
+example are not interchangeable. The early release used a much smaller subset of D01,
+D02 and D05-style numerical work.
+
+D06 would support preference learning with verified chosen/rejected pairs. D08 would
+support Bahasa Malaysia and other languages, with equivalent scientific terminology and
+answers. D09 would test and teach reliability, including uncertainty and citation integrity.
+D10 would define states, observations, allowed actions, termination and rewards for
+scientific tasks. D07 remains held out from all learning.
+
+
+
+
+Evidence: [S1, S7, S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                        11
+
+========== PRINT PAGE 12 ==========
+
+PART II / DATA
+
+
+
+
+07 Structured scientific data
+Represent the question, the evidence and the result as distinct objects.
+
+The original design called for structured symbolic trajectories with problem identity,
+domain, difficulty, explicit mathematical operations, final answer, verification engine and
+provenance. Agentic records were to contain goals, planned actions, actual tool calls,
+observations and recovery decisions. This format is more expressive than a plain
+conversational answer.
+
+
+   {
+       "trajectory_id": "DEMO-SYM-001",
+       "domain": "calculus",
+       "problem": "Differentiate x**2 * sin(2*x)",
+       "steps": ["product rule", "chain rule"],
+       "final_answer": "2*x*sin(2*x)+2*x**2*cos(2*x)",
+       "verification": {"engine": "sympy", "status": "review"},
+       "source": "illustrative synthetic example"
+   }
+
+
+Listing 7.1 — Teaching example adapted from the initial proposal; not a D07 benchmark item.
+
+
+Evidence graph design
+A future D03 evidence repository would maintain papers, claims, equations, experiments
+and findings separately. A claim should identify its source location, DOI where applicable,
+units, assumptions, extraction confidence and review status. Relations such as supports,
+contradicts, tests, derived_from and reproduces preserve the reasoning context.
+
+A generated interpretation must never overwrite its evidence passage. Store raw sources,
+extracted chunks, normalized claims and derived examples as separately versioned assets.
+Verify rights at each transformation and preserve attribution.
+
+
+
+
+Evidence: [S1]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                           12
+
+========== PRINT PAGE 13 ==========
+
+PART II / DATA
+
+
+
+
+08 The first verified corpus
+M1.4: a small generator designed to fail visibly.
+
+  Capability                         Candidates         Capability                          Candidates
+
+  Mathematics                        200                Scientific reasoning                150
+
+  Agentic tools                      150                Statistics                          100
+
+  Methodology                        100                Verification                        100
+
+  Experiment design                  60                 Literature synthesis                50
+
+  Academic articulation              50                 Ethics/reliability                  40
+
+
+The initial generator created 1,000 candidates from 63 templates, with 795 development
+and 205 validation examples. Six hundred numerical checks passed, including 150 actual
+single-tool replays; 400 narrative examples still required rubric review. No examples were
+approved for training at this stage.
+
+The agentic tasks used bounded computational tools such as weighted averages,
+trapezoidal integration, regression slope and numerical roots. The generator recorded
+inputs, observations, verification and replay outcomes. This is evidence of executed
+scientific functions, not a demonstration that a language model autonomously chose them.
+
+Screening against the frozen diagnostic
+The question-level D07 check reported zero flags at character similarity 0.78 and word
+similarity 0.72. The maximum observed similarities were 0.4134 and 0.5328. This
+establishes only the absence of flags under those lexical rules. It does not establish
+semantic independence or absence of pretraining contamination.
+
+
+   M1.4 remains a candidate dataset. The final training experiment did not simply concatenate its 1,000
+   records with the subsequent 5,000.
+
+
+
+
+Evidence: [S6]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                       13
+
+========== PRINT PAGE 14 ==========
+
+PART II / DATA
+
+
+
+
+09 Scaling the scientific factory
+M1.4.1: 5,000 new examples, with a much stricter view of diversity.
+
+  Family                              Count               Family                               Count
+
+  Mathematics                         1,000               Science                              750
+
+  Agentic tools                       750                 Statistics                           500
+
+  Methodology                         500                 Verification                         500
+
+  Experimental design                 300                 Literature                           250
+
+  Academic writing                    250                 Ethics/reliability                   200
+
+
+Generated questions                                                                                          5,000
+
+Unique exact answers                                                                                         4,690
+
+Number-masked answers                                                                                         178
+
+Distinct templates                                                                                             70
+
+Figure 9.1 — Exact distinctness is not mechanism diversity. Number masking exposes near-repeated patterns.
+
+The run recorded 3,000/3,000 numerical checks and 2,000 narrative examples awaiting
+review. It exported 4,000 development and 1,000 validation candidates, with no template
+overlap between those splits. D07 screening again returned no lexical flags.
+
+The decisive limitation was that all 5,000 prompts had a number-masked neighbor with
+similarity of at least 0.95. The 4,690 distinct exact answers collapsed to only 178 distinct
+number-masked answers. A representative review queue selected five examples per
+template (350 records). Semantic embedding analysis was not run.
+
+
+
+
+Evidence: [S7]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                            14
+
+========== PRINT PAGE 15 ==========
+
+PART II / DATA
+
+
+
+
+10 Multi-tool execution and teachers
+Tool traces are useful training candidates only when actions and
+observations are independently checked.
+
+M1.4.1 expanded from single-tool tasks to 750 workflows with dependent steps. Its report
+records 1,500 successful execution steps, 150 deliberately rejected calls and 1,650 passing
+replay checks. These traces belong to bounded generator-owned functions, not
+unrestricted execution of model-produced code.
+
+
+   # Illustrative bounded tool workflow
+   readings = [12, 18, 25, 37]
+   total = sum(readings)
+   try:
+        rate = total / 0
+   except ZeroDivisionError:
+        corrected_duration = 5
+        rate = total / corrected_duration
+   assert rate == 18.4
+
+
+Listing 10.1 — Teaching example of error recovery, not a recorded benchmark trace.
+
+
+Teacher orchestration
+Qwen3 and Phi-4-mini were configured as candidate teachers, not guaranteed stronger
+models. The teacher saw the original prompt and permitted evidence, but not reference
+answers or D07. Each proposal was stored separately, with numerical checking and
+narrative review. SQLite checkpoints were keyed by corpus, model revision, prompt
+configuration and runtime.
+
+The Colab session later reported 98 Qwen3 proposals and zero Phi proposals, with
+database integrity OK. Remaining teacher inference was deliberately skipped. The final
+SFT audit states no teacher text and no tool traces were included in training. These two
+experiments therefore cannot be credited with the measured adapter improvement.
+
+
+
+
+Evidence: [S7, S8, S10; operator-reported checkpoint check]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                           15
+
+========== PRINT PAGE 16 ==========
+
+PART III / EVALUATION
+
+
+
+
+11 Design of the TSIB benchmark
+Trimorious Scientific Intelligence Benchmark (D07): a diagnostic, not a
+universal intelligence score.
+
+  Task family                               Cases        Evaluation type
+
+  Mathematical reasoning                    200          Objective
+
+  Scientific reasoning                      150          Objective
+
+  Research methodology                      120          Objective
+
+  Statistical reasoning                     120          Objective
+
+  Experimental design                       100          Objective
+
+  Scientific verification                   100          Objective
+
+  Literature synthesis                      80           Rubric
+
+  Agentic tool use                          60           Objective
+
+  Academic articulation                     40           Rubric
+
+  Ethics/reliability                        30           Objective
+
+  Total                                     1,000        880 objective + 120 rubric
+
+
+The benchmark comprised 50 synthetic templates, of which 44 contributed objective
+questions. A separate answer key allowed controlled scoring. The hardened scorer
+distinguished correct content from strict protocol compliance and evaluated tool-task
+success independently.
+
+The gold keys and question files remain private and should never appear in a public model
+card, training dataset or teacher prompt. The benchmark is now a known diagnostic
+because later generators were designed with knowledge of its structure. Its repeated
+templates and nonrandom selection constrain inference beyond the test itself.
+
+
+
+
+Evidence: [S4, S5]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                     16
+
+========== PRINT PAGE 17 ==========
+
+PART III / EVALUATION
+
+
+
+
+12 Scoring and paired comparisons
+A stronger scorer must not turn evaluation into a moving target.
+
+M1.3.1 introduced flexible numeric parsing, independent answer-key auditing and
+separate content/protocol measures. The objective evaluation checked 880 keys; 120 rubric
+items required expert review. The same hardened rules were reused in the subsequent
+foundation selection.
+
+
+   # Illustrative exact paired McNemar computation
+   from scipy.stats import binomtest
+   wins = 6      # candidate right, base wrong
+   losses = 4    # base right, candidate wrong
+   p = binomtest(min(wins, losses), wins + losses,
+                 p=0.5, alternative="two-sided").pvalue
+   # 0.75390625 for the reported v2 comparison
+
+
+Listing 12.1 — Calculation of the reported paired p-value; does not reproduce raw evaluation responses.
+
+For a paired test, the relevant information is discordant outcomes: how many tasks one
+model gets right when the other gets wrong. The paired difference equals (wins minus
+losses) divided by the total number of objective tasks. McNemar’s exact test uses the
+discordant count under a symmetric null.
+
+Repeated questions from the same template are correlated. A template-level bootstrap
+resamples template groups, rather than treating every row as independent. This gives a
+descriptive interval that reflects some dependence, but does not make the synthetic
+benchmark a random sample of real science.
+
+
+   Keep checkpoint selection on a development evaluation set. Use a separate independently authored
+   confirmation test only after the final adapter is frozen.
+
+
+
+
+Evidence: [S4, S5, S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                       17
+
+========== PRINT PAGE 18 ==========
+
+PART III / EVALUATION
+
+
+
+
+13 What the original model taught us
+The first adapter did not outperform its base on the frozen objective
+benchmark.
+
+  Model / metric                              Qwen2.5 base                   Trimorious v1
+
+  Objective correct                           449 / 880                      403 / 880
+
+  Accuracy                                    51.02%                         45.80%
+
+  Strict protocol                             73.6%                          36.7%
+
+  Agentic objective                           40 / 60                        7 / 60
+
+
+The paired evaluation reported 96 questions where only the base was correct and 50
+where only the adapter was correct. The difference was -5.23 percentage points. The
+ordinary exact p-value was approximately 0.000175; the template-cluster interval was
+-13.72 to +1.90 percentage points.
+
+The results were enough to motivate a redesign, but not enough to establish catastrophic
+forgetting as the causal mechanism. The historical training base revision was not verified,
+the benchmark was synthetic, and the dataset audit exposed repeated patterns. A future
+ablation would need to isolate the effects of data, training hyperparameters, evaluation
+protocol and model identity.
+
+The engineering conclusion
+Do not continue fine-tuning the old adapter by default. Rebuild the source data contracts,
+establish a clean comparison baseline and evaluate multiple candidate foundations.
+Preserve the original model as a historical reference rather than overwriting it.
+
+
+   The old repository name includes “4B”, but its recorded base is Qwen2.5-3B-Instruct-bnb-4bit. The name
+   should not be mistaken for a verified parameter count.
+
+
+
+
+Evidence: [S3–S5]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                         18
+
+========== PRINT PAGE 19 ==========
+
+PART III / EVALUATION
+
+
+
+
+14 Selecting the new foundation
+Qwen3-4B-Instruct-2507 was selected provisionally on measured diagnostic
+performance.
+
+Trimorious v1                                                                                                45.80%
+
+Qwen2.5 historical                                                                                           51.02%
+
+Qwen2.5 fresh                                                                                                50.80%
+
+Phi-4-mini                                                                                                   62.27%
+
+Qwen3 foundation                                                                                             69.09%
+
+Trimorious 2.0                                                                                               69.32%
+
+Figure 14.1 — Historical and foundation-selection objective accuracy (880 cases per model). The final adapter is added
+for context.
+
+  Model                                                  Correct / 880               Strict protocol
+
+  Historical Qwen2.5                                     449                         73.6%
+
+  Fresh Qwen2.5 control                                  447                         See scorecard
+
+  Phi-4-mini                                             548                         82.6%
+
+  Qwen3-4B                                               608                         99.9%
+
+
+The Qwen3 candidate delivered 69.09% objective accuracy; Phi-4-mini reached 62.27%. Phi
+was faster in the foundation screen (1.68 s versus 2.23 s mean latency). Both achieved 60/60
+on the narrow agentic task set. The candidate-selection report recorded 600 rubric
+responses awaiting review and a provisional rather than formal approval.
+
+The selection balanced performance, latency and compatibility. A candidate model blocked
+by incomplete license evidence was deferred. Qwen3’s exact evaluated revision was
+pinned for subsequent training and testing. This was a model-selection experiment, not a
+proof of all scientific capabilities.
+
+
+
+
+Evidence: [S5]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                                19
+
+========== PRINT PAGE 20 ==========
+
+PART III / EVALUATION
+
+
+
+
+15 Approval, recovery and the seven gates
+The final development path was built to survive interrupted Colab sessions.
+
+   01        Recover
+
+   02        Approve
+
+   03        Smoke
+
+   04        Train
+
+   05        Evaluate
+
+   06        Package
+
+   07        Publish
+
+Figure 15.1 — Seven-stage release workflow; each stage is gated by persistent evidence.
+
+The candidate corpus was recovered from its ZIP archive and compared with the original
+corpus fingerprint. A previous export failed when the active records variable contained
+850 rows rather than 5,000 and lacked fingerprints. The integrity assertion correctly
+stopped export. Recovery reloaded the original data and preserved SQLite teacher
+proposals.
+
+A separate failure occurred at Qwen3 loading: the T4 process occupied 14.31 GiB of 14.56
+GiB. Only 257.81 MiB was free while the next allocation requested 742 MiB. The project
+moved to a clean runtime, 4-bit quantization, separate GPU worker processes and
+persistent checkpoints. This reduced the risk of models left in memory from previous
+stages.
+
+The combined release notebook separates preparation, approval, smoke testing, full
+training, evaluation, packaging and publication. “Run all” is a controller, not permission to
+bypass scientific review or publish a model automatically.
+
+
+
+
+Evidence: [S8; operator-reported runtime and recovery logs]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                        20
+
+========== PRINT PAGE 21 ==========
+
+PART III / EVALUATION
+
+
+
+
+16 Freeze a defensible training corpus
+The approved experiment used 288 development and 36 validation
+examples.
+
+Recovered source candidates                                                                                       5,000
+
+Supported recomputations                                                                                          2,250
+
+Selected review candidates                                                                                            324
+
+Training examples                                                                                                     288
+
+Figure 16.1 — From candidates to the final experimental SFT corpus. This is a selection funnel, not a failure rate.
+
+  Family                                      Training           Validation            Templates train / val
+
+  Mathematics                                 96                 12                    8/2
+
+  Science                                     96                 12                    8/2
+
+  Statistics                                  96                 12                    8/2
+
+  Total                                       288                36                    24 / 6
+
+
+The recovery implementation independently recomputed 2,250 supported numerical
+answers from prompts, excluding teacher responses, narrative cases and tool trajectories.
+The selected queue capped development at 12 records per template and validation at 6.
+The final audit includes the actual 324 selected examples and a frozen approval document.
+
+The approval file attests review and licensing; the detailed reviewer dispositions are
+referenced by hash but absent from the final audit ZIP. Consequently, integrity and
+selection can be inspected, while the actual human review evidence and legal attestation
+still require confirmation.
+
+
+
+
+Evidence: [S8–S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                                    21
+
+========== PRINT PAGE 22 ==========
+
+PART IV / IMPLEMENTATION
+
+
+
+
+17 Reproducible project layout
+A notebook is an interface; persistent artifacts are the source of truth.
+
+
+   trimorious_PRIVATE_m1_4_1/
+     candidate archives (read-only)
+     teacher_checkpoints.sqlite3
+     release_v2/
+       recovery.json
+       review_candidates.jsonl
+       review_queue.csv
+       dataset_approval.json
+       train.jsonl
+       validation.jsonl
+       review_dispositions.jsonl
+       project_state.json
+       auto_gpu_versions.json
+       sft_output/<config fingerprint>/
+         config.json
+         smoke_pass.json
+         checkpoints/
+         final_adapter/
+         training_complete.json
+         evaluation artifacts
+         package_approval.json
+         publish_receipt.json
+
+
+Listing 17.1 — Simplified project tree from the combined notebook; file presence varies with completed stages.
+
+On restart, mount Drive and verify the archived corpus and approved dataset hashes
+before loading a model. The active training directory is keyed by the complete training
+configuration. A changed dataset, revision, software environment or hyperparameter set
+must not silently reuse an unrelated checkpoint.
+
+Google Colab’s temporary /content directory is ephemeral. Preserve notebook code,
+approved data, benchmark files, training checkpoints and review evidence on persistent
+storage before deleting the runtime. Keep credentials in notebook secrets, never in source,
+logs or the release archive.
+
+
+
+
+Evidence: [S8]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                              22
+
+========== PRINT PAGE 23 ==========
+
+PART IV / IMPLEMENTATION
+
+
+
+
+18 Integrity and numerical verification
+A cryptographic digest detects unexpected changes; it does not certify
+correctness.
+
+
+   import json, hashlib, zipfile
+   from pathlib import Path
+
+   def canon(x):
+       return json.dumps(x, ensure_ascii=False,
+                         sort_keys=True, separators=(',', ':'),
+                         allow_nan=False)
+
+   def sha(b):
+       data = b if isinstance(b, bytes) else canon(b).encode()
+       return hashlib.sha256(data).hexdigest()
+
+   def archive_check(z):
+       ns = z.namelist()
+       assert len(ns) == len(set(ns)) and z.testzip() is None
+       m = json.loads(z.read('archive_manifest.json'))
+       assert set(m) == set(ns) - {'archive_manifest.json'}
+       assert all(sha(z.read(k)) == v for k, v in m.items())
+       return m
+
+
+Listing 18.1 — Adapted from common.py in the combined notebook; checks ZIP membership and per-file hashes.
+
+
+   # Teaching example: validate a symbolic derivative
+   import sympy as sp
+   x = sp.symbols('x')
+   f = x**2 * sp.sin(2*x)
+   claimed = 2*x*sp.sin(2*x) + 2*x**2*sp.cos(2*x)
+   assert sp.simplify(sp.diff(f, x) - claimed) == 0
+
+
+Listing 18.2 — Independent symbolic recomputation, using a new illustrative example.
+
+The actual recovery code parses supported, bounded prompt patterns, never executes
+arbitrary prompt text as Python, and compares numerical results using tight relative and
+absolute tolerances. A verified final number is not automatically proof that every
+explanation or assumption is correct.
+
+
+
+
+Evidence: [S8, S9]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                          23
+
+========== PRINT PAGE 24 ==========
+
+PART IV / IMPLEMENTATION
+
+
+
+
+19 The exact learning configuration
+A QLoRA adapter updates a small trainable component while keeping the
+quantized foundation frozen.
+
+  Setting                         Recorded training configuration
+
+  Base                            Qwen/Qwen3-4B-Instruct-2507
+
+  Base revision                   cdbee75f17c01a7cc42f958dc650907174af0554
+
+  Quantization / compute          NF4 4-bit, double quantization, FP16
+
+  LoRA rank / alpha / dropout     8 / 16 / 0.05
+
+  Target modules                  q, k, v, o, gate, up and down projections
+
+  Sequence length                 512
+
+  Batch / accumulation            1 / 16
+
+  Learning rate                   0.0001
+
+  Optimizer                       paged_adamw_8bit (notebook)
+
+  Epoch / optimizer steps         1 / 18
+
+  Seed                            417031
+
+  Checkpointing                   Gradient checkpointing; KV cache disabled (notebook)
+
+
+LoRA represents an update to a frozen weight matrix W with a low-rank product.
+Conceptually, W′ = W + (alpha/r) BA. The matrices A and B are trainable, while the original
+model remains the required foundation at inference. QLoRA stores the base in a low-bit
+representation and computes in a supported higher precision.
+
+With 288 training rows, batch size one and gradient accumulation of 16, the recorded
+one-epoch run corresponds to 18 optimizer steps. This is a controlled pilot. The short run
+and limited template variety constrain what can be concluded about generalisation.
+
+
+
+
+Evidence: [S8, S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                          24
+
+========== PRINT PAGE 25 ==========
+
+PART IV / IMPLEMENTATION
+
+
+
+
+20 Loading the model in 4-bit
+The GPU smoke test must demonstrate feasibility before full training.
+
+
+   import torch
+   from transformers import (AutoModelForCausalLM,
+       AutoTokenizer, BitsAndBytesConfig)
+   from peft import (LoraConfig, get_peft_model,
+                     prepare_model_for_kbit_training)
+   BASE = "Qwen/Qwen3-4B-Instruct-2507"
+   REV = "cdbee75f17c01a7cc42f958dc650907174af0554"
+   q = BitsAndBytesConfig(
+       load_in_4bit=True, bnb_4bit_quant_type="nf4",
+       bnb_4bit_use_double_quant=True,
+       bnb_4bit_compute_dtype=torch.float16)
+   tok = AutoTokenizer.from_pretrained(BASE, revision=REV)
+   model = AutoModelForCausalLM.from_pretrained(
+       BASE, revision=REV, quantization_config=q,
+       device_map={"": 0}, torch_dtype=torch.float16)
+   assert model.is_loaded_in_4bit
+   model.config.use_cache = False
+   model = prepare_model_for_kbit_training(
+       model, use_gradient_checkpointing=True)
+   lora = LoraConfig(r=8, lora_alpha=16, lora_dropout=.05,
+       target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
+           "gate_proj", "up_proj", "down_proj"],
+       bias="none", task_type="CAUSAL_LM", revision=REV)
+   model = get_peft_model(model, lora)
+   model.print_trainable_parameters()
+
+
+Listing 20.1 — Teaching adaptation of the pinned QLoRA loader; requires a compatible CUDA runtime and
+dependencies. The full notebook has preflight and version checks.
+
+The recorded training environment used torch 2.14.1+cu130, Transformers 4.57.6, PEFT
+0.18.1, Accelerate 1.15.0, bitsandbytes 0.50.2, huggingface_hub 0.36.2 and safetensors 0.8.0.
+These are historical versions, not a promise of availability in a different runtime.
+
+A clean process isolates CUDA memory. On a T4, use FP16 rather than BF16 and test actual
+quantization support. Stop if the model is not loaded in 4-bit or memory is inadequate.
+
+
+
+
+Evidence: [S8, S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                     25
+
+========== PRINT PAGE 26 ==========
+
+PART IV / IMPLEMENTATION
+
+
+
+
+21 Assistant-only loss and the smoke test
+Teach the model to produce the response, not to imitate the user’s prompt.
+
+The final dataset stores a user message and an assistant message. The notebook uses the
+foundation tokenizer’s chat template, computes the prompt boundary and masks prompt
+and padding positions with -100. Only assistant response tokens contribute to the
+supervised objective. The full sequence must not be silently truncated; a record that cannot
+fit requires an explicit policy.
+
+
+   # Teaching pattern: use the actual chat template
+   prompt_ids = tok.apply_chat_template(
+       messages[:1], tokenize=True, add_generation_prompt=True)
+   full_ids = tok.apply_chat_template(
+       messages, tokenize=True, add_generation_prompt=False)
+   assert full_ids[:len(prompt_ids)] == prompt_ids
+   assert len(full_ids) <= 512
+   labels = [-100] * len(prompt_ids) + full_ids[len(prompt_ids):]
+   assert any(x != -100 for x in labels)
+
+
+Listing 21.1 — Simplified masking check for a two-message record. Validate token boundaries against the installed
+tokenizer.
+
+
+Ten-step feasibility gate
+The smoke adapter is disposable. Ten optimizer steps must produce finite loss, finite
+gradients and at least one nonzero trainable gradient. The final training run uses a fresh
+adapter and a matching configuration rather than quietly continuing the smoke model.
+The notebook’s health callback logs loss, gradient norm and peak GPU allocations.
+
+The final audit includes training-completion logs, but does not include the standalone
+smoke_pass.json file. A future release review should retrieve the original receipt to prove
+that this gate was executed, not infer its success from full training alone.
+
+
+
+
+Evidence: [S8, S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                                 26
+
+========== PRINT PAGE 27 ==========
+
+PART IV / IMPLEMENTATION
+
+
+
+
+22 Training, checkpointing and resume
+The notebook uses a conservative, reproducible one-epoch experiment.
+
+
+   # Condensed TrainingArguments from the release notebook
+   from transformers import Trainer, TrainingArguments
+   args = TrainingArguments(
+       output_dir=str(checkpoint_dir),
+       per_device_train_batch_size=1,
+       per_device_eval_batch_size=1,
+       gradient_accumulation_steps=16,
+       gradient_checkpointing=True,
+       gradient_checkpointing_kwargs={"use_reentrant": False},
+       fp16=True, bf16=False, optim="paged_adamw_8bit",
+       learning_rate=1e-4, max_grad_norm=1.0,
+       warmup_ratio=.03, num_train_epochs=1,
+       logging_steps=1, eval_strategy="epoch",
+       save_strategy="steps", save_steps=5,
+       save_total_limit=2, save_safetensors=True,
+       report_to="none", seed=417031, data_seed=417031,
+       remove_unused_columns=False, prediction_loss_only=True)
+   trainer = Trainer(model=model, args=args,
+       train_dataset=tr, eval_dataset=va,
+       data_collator=collate, callbacks=[health])
+   result = trainer.train(resume_from_checkpoint=resume)
+   trainer.save_model(str(final_adapter_dir))
+   tok.save_pretrained(str(final_adapter_dir))
+
+
+Listing 22.1 — Selected training implementation. tr, va, collate, health and resume are prepared by the notebook. Do
+not run this fragment in isolation.
+
+A resumable checkpoint requires more than adapter weights: trainer state, optimizer state,
+scheduler state and RNG state matter. The notebook verifies the expected checkpoint files
+before resuming. Use a new workspace when changing frozen training data or
+configuration.
+
+DPO and GRPO were not executed. Future preference pairs and verifiable rewards must be
+separately reviewed; they should not be introduced merely to make the development
+pipeline look more sophisticated.
+
+
+
+
+Evidence: [S8, S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                                27
+
+========== PRINT PAGE 28 ==========
+
+PART IV / RESULTS
+
+
+
+
+23 What the training run achieved
+The reported run overcame GPU exhaustion and successfully optimized a
+LoRA adapter.
+
+
+
+       5
+
+
+
+
+       4
+
+
+
+
+       3
+
+
+
+
+       2
+           1                     5                             10                              15                 18
+                                                       Optimizer step
+Figure 23.1 — Logged training loss across 18 optimizer steps. Source: training_complete.json; plotted directly from
+recorded values.
+
+  Metric                                                    Recorded value
+
+  Average training loss                                     3.2935
+
+  Initial / final logged loss                               4.7040 / 2.2372
+
+  Validation loss                                           2.6585
+
+  Training runtime                                          276.21 s (about 4m 36s)
+
+  Peak allocated GPU memory                                 4.2816 GiB (PyTorch)
+
+  Final gradient norm                                       2.0739
+
+
+Finite losses and nonzero gradient norms are consistent with a functioning optimization
+process. The average loss is not the final step loss. Peak allocated memory is not total
+process VRAM, and the measured training runtime excludes unrelated setup and
+evaluation work.
+
+One epoch on 24 training templates is not sufficient evidence of generalisation. The final
+scientific benchmark, not decreasing training loss, determines whether the new adapter
+improves on the foundation.
+
+
+
+Evidence: [S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                                   28
+
+========== PRINT PAGE 29 ==========
+
+PART IV / RESULTS
+
+
+
+
+24 The scientific scorecard
+Trimorious 2.0 is a trained experimental adapter; the gains are modest.
+
+  Capability                                   n        Qwen3             v2                Delta pp
+
+  Agentic Tool Use                             60       100.00%           100.00%           +0.00
+
+  Experimental Design                          100      100.00%           100.00%           +0.00
+
+  Mathematical Reasoning                       200      20.50%            19.50%            -1.00
+
+  Research Ethics Reliability                  30       100.00%           100.00%           +0.00
+
+  Research Methodology                         120      100.00%           100.00%           +0.00
+
+  Scientific Reasoning                         150      54.67%            56.67%            +2.00
+
+  Scientific Verification                      100      86.00%            87.00%            +1.00
+
+  Statistical Reasoning                        120      74.17%            74.17%            +0.00
+
+  D07 objective total                          880      69.09%            69.32%            +0.23
+
+
+On D07, six base errors became correct and four previously correct base answers became
+wrong. The adapter achieved 610/880 versus 608/880. Its mathematics score fell by one
+point; scientific reasoning rose by two points; verification rose by one point. Statistics and
+several already-saturated categories were unchanged.
+
+The original model’s 45.80% score is substantially lower than the 69.32% recorded for v2.
+However, the unmodified Qwen3 model was already at 69.09%. The base-model change
+explains nearly all of the observed gain across this sequence of experiments. This is not a
+controlled causal decomposition, but it is essential context for publication.
+
+
+   Use the historical scorecards, not the final audit’s erroneous MODEL_COMPARISON.csv (which lists
+   67.4% and 71.1% for v1 and Qwen2.5). The corrected figures are 45.80% and 51.02%.
+
+
+
+
+Evidence: [S4, S5, S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                    29
+
+========== PRINT PAGE 30 ==========
+
+PART IV / RESULTS
+
+
+
+
+25 Uncertainty, speed and release criteria
+A passed software gate is not equivalent to a proven scientific advance.
+
+  Measure                                    Qwen3                   Trimorious 2.0
+
+  D07 objective                              608 / 880               610 / 880
+
+  Fresh confirmation (reported)              75 / 100                78 / 100
+
+  Strict protocol                            99.9%                   96.7%
+
+  Mean latency (s)                           1.901                   3.443
+
+  Mean generated tokens                      20.272                  20.215
+
+  Peak allocated inference (GiB)             3.746                   3.747
+
+
+D07’s reported paired p-value is 0.75390625, with a template-bootstrap 95% interval of
+-0.35 to +0.89 percentage points. The reported fresh test improves by three points (p = 0.25;
+interval 0 to 9). Neither overall comparison establishes a statistically significant
+improvement. Fresh-test authorship and isolation remain unverified.
+
+The reported latency increases by approximately 81%, with similar generated token
+counts. Protocol compliance drops 3.2 points. These are important trade-offs for future
+serving and structured agent integration.
+
+A material policy discrepancy
+  Release policy                             Notebook default        Recorded approval
+
+  Minimum D07 gain                           +1 pp                   -5 pp
+
+  Maximum family drop                        5 pp                    5 pp
+
+  Minimum fresh gain                         0 pp                    0 pp
+
+  Maximum protocol drop                      2 pp                    5 pp
+
+
+The final audit passes its recorded policy, but not the notebook defaults for D07 gain and
+protocol drop. The evidence does not establish when or why the thresholds changed. A
+release reviewer must verify that the actual policy was approved before evaluation, and
+must not retroactively relax criteria.
+
+
+
+
+Evidence: [S8, S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                          30
+
+========== PRINT PAGE 31 ==========
+
+PART V / DEPLOYMENT
+
+
+
+
+26 Inference with the trained adapter
+Load the same foundation, then apply the adapter. No new training is
+necessary.
+
+
+  import torch
+  from transformers import (AutoTokenizer,
+      AutoModelForCausalLM, BitsAndBytesConfig)
+  from peft import PeftModel
+  BASE = 'Qwen/Qwen3-4B-Instruct-2507'
+  REV = 'cdbee75f17c01a7cc42f958dc650907174af0554'
+  ADAPTER = 'roime81/trimorious-research-4B-v2'
+  tok = AutoTokenizer.from_pretrained(BASE, revision=REV)
+  q = BitsAndBytesConfig(load_in_4bit=True,
+      bnb_4bit_quant_type='nf4', bnb_4bit_use_double_quant=True,
+      bnb_4bit_compute_dtype=torch.float16)
+  base = AutoModelForCausalLM.from_pretrained(BASE, revision=REV,
+      quantization_config=q, device_map={'': 0},
+      torch_dtype=torch.float16)
+  model = PeftModel.from_pretrained(base, ADAPTER).eval()
+  prompt = tok.apply_chat_template([{'role': 'user', 'content':
+      'Explain the difference between correlation and causation.'}],
+      tokenize=False, add_generation_prompt=True)
+  inputs = tok(prompt, return_tensors='pt', add_special_tokens=False)
+  inputs = inputs.to(model.get_input_embeddings().weight.device)
+  with torch.inference_mode():
+      out = model.generate(**inputs, max_new_tokens=256,
+          do_sample=False, pad_token_id=tok.eos_token_id)
+  print(tok.decode(out[0, inputs['input_ids'].shape[1]:],
+                   skip_special_tokens=True))
+
+
+Listing 26.1 — Formatted release-package inference.py. Requires access to the adapter and a compatible CUDA
+environment. For a private model authenticate securely; never hard-code a token.
+
+This adapter is not a standalone 4B checkpoint. Keep the exact base revision and
+compatible tokenizer. A future merged or GGUF version would require separate
+conversion, license checks and numerical/inference testing; none is evidenced as released
+in the audit.
+
+
+
+
+Evidence: [S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                           31
+
+========== PRINT PAGE 32 ==========
+
+PART V / DEPLOYMENT
+
+
+
+
+27 The scientific playground
+Prompt-based testing can complement, but never replace, controlled
+evaluation.
+
+The Gradio playground notebook was designed to load the audited adapter from Drive or
+the private Hugging Face repository. It compares the same prompt using the adapter and
+the unmodified foundation, switching the adapter rather than loading two large models. It
+records generated token counts and response times.
+
+
+  # Teaching adaptation: local Gradio wrapper.
+  # generate_answer is a verified inference function.
+  import gradio as gr
+
+  def respond(message, history):
+      # Convert history to the model's supported chat format.
+      return generate_answer(message, history)
+
+  demo = gr.ChatInterface(fn=respond,
+      title="Trimorious 2.0 Scientific Playground")
+  demo.launch(share=False)
+
+
+Listing 27.1 — Local UI illustration, not a complete inference loader. Use the provided playground notebook for actual
+adapter comparison.
+
+
+Suggested manual probes
+  Area                     Illustrative prompt (not D07)
+
+  Math                     Solve x² − 7x + 12 = 0; substitute both roots.
+
+  Science                  Separate correlation, causation and confounding.
+
+  Statistics               Explain a paired study and assumptions of a paired t-test.
+
+  Research                 Propose a controlled solar-panel efficiency experiment.
+
+  Reliability              State assumptions, uncertainty and falsifiable predictions.
+
+
+The T4 quota was exhausted during development, so a CPU playground variant was
+prepared. CPU 4-bit support depends on installed libraries, architecture and RAM, and
+actual launch was not validated in the project conversation. Local inference or future
+compatible GGUF conversion may be more convenient for routine tests.
+
+
+
+
+Evidence: [S11]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                                32
+
+========== PRINT PAGE 33 ==========
+
+PART V / DEPLOYMENT
+
+
+
+
+28 Package and publish responsibly
+The target is a transparent experimental model, not a claim of production
+readiness.
+
+  Artifact                                      Purpose
+
+  adapter_model.safetensors                     Trained LoRA weights; digest must match audit.
+
+  adapter_config.json                           Exact base, revision and adapter architecture.
+
+  Tokenizer and chat template                   Reproducible input formatting.
+
+  README.md / model card                        Scope, training, metrics, limitations and intended use.
+
+  LICENSE and attribution                       Upstream and derivative redistribution obligations.
+
+  Inference / dependencies                      Instructions and compatible software.
+
+  Artifact manifest                             SHA-256 verification of release files.
+
+
+The combined notebook requires explicit upload approval, checks that the authenticated
+account is the intended owner, creates a private repository and restricts uploads to
+approved files. It downloads each file at the committed revision and checks hashes. Public
+visibility is a separate explicit approval.
+
+
+   # Inspect an already uploaded private repository securely
+   from huggingface_hub import HfApi
+   from google.colab import userdata
+   api = HfApi(token=userdata.get('HF_TOKEN'))
+   info = api.model_info('roime81/trimorious-research-4B-v2')
+   print('Revision:', info.sha, 'Private:', info.private)
+
+
+Listing 28.1 — Read-only repository inspection. No publication or visibility change.
+
+The supplied controller state records “Private upload verified” and waits for public
+approval. The receipt and remote revision were absent from the final audit, so the remote
+upload has not been independently confirmed for this book. Do not publish D07 questions,
+answer keys, private reviewer records or credentials.
+
+
+
+
+Evidence: [S8, S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                       33
+
+========== PRINT PAGE 34 ==========
+
+PART V / DEPLOYMENT
+
+
+
+
+29 What remains before public release
+Independent review found gaps in the final release evidence.
+
+  Finding                             Required evidence / action
+
+  Raw v2 responses absent             Export response store and scoring records; rerun scorer without
+                                      changing rules.
+
+  Rubric status inconsistent          Report says 120 pending; README says 100% accepted. Recover
+                                      actual human judgments.
+
+  Fresh test independence             Document authorship, seal, access controls and key review.
+
+  Policy threshold change             Establish timing and actual approval.
+
+  Weights not supplied                Verify adapter hash and reload exact base + adapter.
+
+  Private upload receipt absent       Confirm remote commit, files and visibility.
+
+  Executed notebook absent            Export actual final notebook and dependency lock.
+
+  License attestation only            Review documented upstream and synthetic data rights.
+
+
+The final ZIP manifest has 15 entries and all 15 hashes match. The training and validation
+data hashes match their approval file, and the adapter configuration matches the reported
+digest. These are integrity checks, not independent replication of GPU training or
+inference.
+
+A release decision should distinguish a research artifact from a production scientific
+assistant. The present model may be described as an experimental QLoRA adapter with
+reported diagnostic results after the evidence is reconciled. Claims of broad superiority,
+certified tool use, independent scientific validation or commercial readiness would be
+unsupported.
+
+
+
+
+Evidence: [S8, S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                     34
+
+========== PRINT PAGE 35 ==========
+
+PART V / FUTURE
+
+
+
+
+30 From core LLM to full THI
+The next engineering programme should strengthen scientific reasoning
+and integrate verified external capabilities.
+
+  Capability                                                Status at this snapshot
+
+  Scientific core LLM                                       Trained; diagnostic evaluation reported.
+
+  Mathematics/statistics                                    Tested on synthetic tasks; math weakness remains.
+
+  Deterministic computation                                 Used in offline data engineering; runtime pending.
+
+  Native multi-tool learning                                750 generated workflows; not used in SFT.
+
+  D03 RAG and evidence graph                                Future integration; source rights pending.
+
+  Adaptive router / specialist models                       Planned; foundation screen is not runtime routing.
+
+  API/MCP and simulations                                   Not demonstrated in the release audit.
+
+  Multilingual and safety                                   Future broader evaluation and data development.
+
+
+The proposed hybrid research pipeline assigns a Coordinator to plan investigations, a
+Literature Scientist to retrieve evidence, a Methodologist to design studies, mathematical
+and experimental specialists to compute and simulate, a Statistician to analyze, a Scientific
+Critic to challenge results, an Academic Writer to communicate findings and a Validation
+Auditor to check provenance.
+
+The future Scientific Lab could execute isolated experiments using SymPy, NumPy, SciPy,
+R, PyMC and formal tools, while tracking artifacts and versions. The Research Studio could
+maintain a literature and evidence graph. All tool calls must be bounded, logged and
+checked; generated text must not be reported as an executed experiment.
+
+
+   Keep THI distinct from Trimorious 2.0. Build and benchmark the integrations before advertising them as
+   working capabilities.
+
+
+
+
+Evidence: [S1, S7, S10; project architecture discussions]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                              35
+
+========== PRINT PAGE 36 ==========
+
+APPENDICES
+
+
+
+
+A Reproducibility checklist
+Use this checklist to move from candidate artifacts to a defensible release.
+
+  Gate                    Minimum evidence
+
+  RECOVER                 Source ZIP manifest, corpus hash, record ledger and independently computed
+                          answers.
+
+  APPROVE                 Reviewed decisions, rights attestation, frozen split data, policy and exact hashes.
+
+  SMOKE                   Actual 10 steps, finite loss/gradients, quantization and GPU logs.
+
+  TRAIN                   Config fingerprint, complete checkpoint, final adapter and training logs.
+
+  EVALUATE                Pinned base, matched conditions, raw outputs, scoring, paired tests, rubric and
+                          fresh test evidence.
+
+  PACKAGE                 Accurate model card, attribution, reload results, requirements and manifest.
+
+  PUBLISH                 Explicit approval, verified private commit and separately approved public
+                          visibility.
+
+
+Suggested commands for inspecting saved artifacts
+
+  from pathlib import Path
+  root = Path('/content/drive/MyDrive/trimorious_PRIVATE_m1_4_1')
+  work = root / 'release_v2'
+  for name in ['recovery.json', 'dataset_approval.json',
+               'project_state.json', 'active_run.json']:
+      path = work / name
+      print(name, path.is_file())
+  # Inspect only project-scoped files; never print secrets.
+
+
+The combined notebook is the implementation reference. Code excerpts in this book
+explain its important mechanisms but intentionally omit the complete scorer, private
+benchmark keys, review files and credential handling. A full independent training
+replication requires authorized access to the exact frozen data and environment.
+
+
+
+
+Evidence: [S8–S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                             36
+
+========== PRINT PAGE 37 ==========
+
+APPENDICES
+
+
+
+
+B Source and artifact register
+Sources are project records supplied for this edition. Private files are
+identified for traceability, not distributed.
+
+ Ref      Evidence source
+
+ S1       Production-readiness upgrade backlog (Pasted markdown(2).md, 26 Nov 2026). Original
+          requirements and D01–D10 plan.
+
+ S2       trimorious_v1_1_audit_bundle.zip; M1.2 audit bundle and remediation notebook. Inventory and
+          earlier schema work.
+
+ S3       trimorious_m1_2_1_reconstruction_20261126T144318149176Z.zip, summary.json; reconstruction
+          notebook.
+
+ S4       M1.3.1 full private audit (1795720481), full_scorecard.csv, full_paired.json, hardening_status.json.
+
+ S5       M1.3.2 full foundation evaluation (1c3d70c27cc3c9f8), scorecard.csv, selection_status.json,
+          runtime_settings.json. 21/21 file hashes verified.
+
+ S6       Trimorious_M1_4_PRIVATE_Pilot_Validation.zip, summary and leakage reports. 23/23 hashes
+          verified.
+
+ S7       Trimorious_M1_4_1_PRIVATE_CPU_Validation.zip, summary, diversity and split reports. 24/24
+          hashes verified.
+
+ S8       Trimorious_2_0_Complete_Seven_Stage_Release.ipynb (29 cells); code and default policy.
+
+ S9       Trimorious_2_0_CPU_Validation.json; local recovery/recompute test report.
+
+ S10      Trimorious_2_0_PRIVATE_Final_Release_Audit.zip (15/15 hashes verified); approval, data, adapter
+          config, training/evaluation reports, README and controller state.
+
+ S11      Trimorious_2_0_Gradio_Playground.ipynb and CPU_Playground.ipynb; inference proposals.
+
+
+Conversation-reported runtime and teacher checkpoint outcomes are identified separately
+in the text. The final executed Colab notebook, full v2 responses, actual adapter weights
+and Hub receipt were not provided in the final audit; this edition does not independently
+reproduce GPU execution.
+
+
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                              37
+
+========== PRINT PAGE 38 ==========
+
+APPENDICES
+
+
+
+
+C Model lineage and public resources
+A compact reference for readers implementing the next stage.
+
+  Resource                    Identifier / location
+
+  Original adapter            huggingface.co/roime81/trimorious-research-4B
+
+  Target v2 adapter           huggingface.co/roime81/trimorious-research-4B-v2
+
+  Foundation                  huggingface.co/Qwen/Qwen3-4B-Instruct-2507
+
+  Model code repository       github.com/roime81/trimorious-model
+
+  Dataset code repository     github.com/roime81/trimorious-datasets
+
+  D01                         huggingface.co/datasets/roime81/trimorious-scientific-instructions
+
+  D02                         huggingface.co/datasets/roime81/trimorious-symbolic-trajectories
+
+  D03                         huggingface.co/datasets/roime81/trimorious-knowledge-base
+
+  D04                         huggingface.co/datasets/roime81/trimorious-agentic-reasoning-knowledge
+
+
+Exact base revision
+
+   cdbee75f17c01a7cc42f958dc650907174af0554
+
+
+
+Reported adapter SHA-256
+
+   5ce2eadc1ca1f33d28b2a6a517eaad53a73263441c5519c3dc662590514a609d
+
+
+The target repository and adapter digest come from the audit. Verify actual remote
+availability and compare downloaded weights before declaring the model published. The
+book does not grant rights to upstream datasets, model weights or third-party software.
+Respect applicable terms and attributions.
+
+Technical resources: Transformers documentation; PEFT documentation; bitsandbytes
+documentation; SymPy; Gradio. These are reference entry points, not additional sources
+for experimental results.
+
+
+
+
+Evidence: [S1, S3, S8, S10]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                    38
+
+========== PRINT PAGE 39 ==========
+
+EPILOGUE
+
+
+
+
+The discipline of verification
+The strongest result is a process that makes its own limitations visible.
+
+Trimorious 2.0 began with an ambitious scientific intelligence concept. The work exposed
+the limitations of the original training corpus, produced a frozen diagnostic, compared
+candidate foundations, generated verified synthetic data, survived memory and
+state-management failures, and completed an experimental QLoRA run.
+
+The evidence supports an upgraded, trained Qwen3-based adapter and a structured
+engineering workflow. It does not establish a large reasoning gain over the new base. The
+original target of a full hybrid research assistant remains an architecture programme:
+evidence retrieval, adaptive routing, live symbolic verification and scientific
+experimentation require separate implementation and testing.
+
+The next iteration should prioritize genuine mathematical task diversity, reviewed
+scientific methodology, validated tool-call trajectories and a truly independent
+confirmation benchmark. When the core model cannot reliably solve a scientific problem,
+a verified computational engine should complement it rather than relying on a larger
+volume of similar synthetic answers.
+
+
+   A credible release is a clear account of what was done, what was measured, what failed and what is still
+   unknown.
+
+
+The goal is not simply to publish a fine-tuned model. It is to build a scientific intelligence
+system whose evidence can be examined, whose calculations can be reproduced, and
+whose results can be challenged.
+
+End of first edition
+This publication draft reflects the project evidence available on 27 November 2026. It is
+intended for author and scientific review before distribution.
+
+
+
+
+Evidence: [S1–S11]
+
+
+TRIMORIOUS 2.0 / TECHNICAL HANDBOOK                                                                           39
