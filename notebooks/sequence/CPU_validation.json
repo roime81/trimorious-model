@@ -1,0 +1,27 @@
+{
+  "tests": {
+    "recover_actual_cpu_archive": {
+      "records": 5000,
+      "numeric_pass": 2250,
+      "review_counts": {
+        "development_candidate": 288,
+        "validation_candidate": 36
+      }
+    },
+    "default_approval_stop": "pass",
+    "smoke_requires_approval_before_gpu": "pass",
+    "review_preserved": "pass",
+    "approval_fixture": {
+      "train": 288,
+      "validation": 36
+    },
+    "repeat_approval": "pass",
+    "tampered_dataset_blocked_before_gpu": "pass",
+    "frozen_scorer_self_tests": 880,
+    "audit_zip_count": 4
+  },
+  "gpu_execution": "not run",
+  "publication": "not attempted",
+  "live_gpu_partial_source": "not locally available; tested original CPU archive",
+  "approval_fixture": "temporary local test only, no scientific approval"
+}
